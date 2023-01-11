@@ -1,13 +1,25 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 const { Todo } = require("./models");
+const path = require("path");
 
-app.get("/", function (request, response) {
-  response.send("Hello World");
+app.get("/", async function (request, response) {
+  const allTodos = await Todo.getTodos();
+  if (request.accepts("html")) {
+    response.render("index", { allTodos });
+  } else {
+    response.json({
+      allTodos,
+    });
+  }
+  // response.render("index");
 });
+
+app.set("view engine", "ejs");
 
 app.get("/todos", async function (_request, response) {
   console.log("Processing list of all Todos ...");
@@ -23,6 +35,8 @@ app.get("/todos", async function (_request, response) {
   // Then, we have to respond with all Todos, like:
   // response.send(todos)
 });
+
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/todos/:id", async function (request, response) {
   try {
